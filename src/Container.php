@@ -9,6 +9,9 @@
 namespace WPHibou\DI;
 
 use Pimple\Container as Pimple;
+use Psr\Container\ContainerInterface;
+use ReflectionClass;
+use ReflectionException;
 
 class Container extends Pimple implements ContainerInterface
 {
@@ -42,7 +45,7 @@ class Container extends Pimple implements ContainerInterface
      *
      * @return mixed Entry.
      */
-    public function get(string $id)
+    public function get($id)
     {
         // simple value exists
         if ($this->has($id)) {
@@ -112,7 +115,7 @@ class Container extends Pimple implements ContainerInterface
      *
      * @return bool
      */
-    public function has(string $id)
+    public function has($id)
     {
         return isset($this[$id]);
     }
