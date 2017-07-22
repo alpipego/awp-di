@@ -1,23 +1,26 @@
 {
-    "name": "wp-hibou/di",
-    "description": "Pimple based autowired dependency injection",
-    "type": "library",
-    "require": {
-        "pimple/pimple": "^3.2",
-        "psr/container": "^1.0",
-        "php": "^7.0"
+  "name": "wp-hibou/di",
+  "description": "Pimple based autowired dependency injection",
+  "type": "library",
+  "require": {
+    "pimple/pimple": "^3.2",
+    "psr/container": "^1.0",
+    "php": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "WPHibou\\DI\\": "src"
     },
-    "autoload": {
-        "psr-4": {
-            "WPHibou\\DI\\": "src"
-        }
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "alpipego",
-            "email": "alpipego@gmail.com"
-        }
-    ],
-    "minimum-stability": "stable"
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "alpipego",
+      "email": "alpipego@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable"
 }
