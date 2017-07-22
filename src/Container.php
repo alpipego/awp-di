@@ -54,7 +54,7 @@ class Container extends Pimple implements ContainerInterface
 
         try {
             $reflector = new ReflectionClass($id);
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             // check if complex value exists
             $configArray = $this->configArray($id);
             if (! empty($configArray)) {
