@@ -9,9 +9,14 @@
 namespace WPHibou\DI;
 
 use Pimple\Container as Pimple;
+use Pimple\Exception\UnknownIdentifierException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
+use ReflectionParameter;
 
 class Container extends Pimple implements ContainerInterface
 {
@@ -47,22 +52,27 @@ class Container extends Pimple implements ContainerInterface
      */
     public function get($id)
     {
+        if (! is_string($id)) {
+            throw new ContainerException('Only strings should be passed as $id');
+        }
         // simple value exists
-        if ($this->has($id)) {
+        if (isset($this[$id])) {
             return $this[$id];
         }
 
         try {
             $reflector = new ReflectionClass($id);
         } catch (ReflectionException $e) {
+            // if mapped value exists
+            if (array_key_exists($id, $this->definitions)) {
+                $this->offsetSet($id, $this->definitions[$id]);
+
+                return $this->definitions[$id];
+            }
             // check if complex value exists
-            $configArray = $this->configArray($id);
+            $configArray = $this->configArray((string)$id);
             if (! empty($configArray)) {
                 return $configArray;
-            }
-            // if mapped value exists
-            if (array_key_exists($id, $this->definitions) && $this->has($this->definitions[$id])) {
-                return $this[$this->definitions[$id]];
             }
             throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
         }
@@ -77,11 +87,11 @@ class Container extends Pimple implements ContainerInterface
             }
         }
 
-        /** @var \ReflectionMethod|null */
+        /** @var ReflectionMethod|null */
         $constructor = $reflector->getConstructor();
 
         if (! is_null($constructor)) {
-            /** @var \ReflectionParameter[] */
+            /** @var ReflectionParameter[] */
             $dependencies = $constructor->getParameters();
         }
 
@@ -102,22 +112,6 @@ class Container extends Pimple implements ContainerInterface
         });
 
         return $this[$id];
-    }
-
-    /**
-     * Returns true if the container can return an entry for the given identifier.
-     * Returns false otherwise.
-     *
-     * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
-     * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
-     *
-     * @param string $id Identifier of the entry to look for.
-     *
-     * @return bool
-     */
-    public function has($id)
-    {
-        return isset($this[$id]);
     }
 
     private function configArray(string $id)
@@ -141,7 +135,29 @@ class Container extends Pimple implements ContainerInterface
         return $return;
     }
 
-    private function resolveDependency(ReflectionParameter $dependency, string $id) : string
+    /**
+     * Returns true if the container can return an entry for the given identifier.
+     * Returns false otherwise.
+     *
+     * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
+     * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
+     *
+     * @param string $id Identifier of the entry to look for.
+     *
+     * @return bool
+     */
+    public function has($id)
+    {
+        try {
+            $this->get($id);
+
+            return true;
+        } catch (NotFoundException $e) {
+            return false;
+        }
+    }
+
+    private function resolveDependency(ReflectionParameter $dependency, string $id)
     {
         if (array_key_exists($id, $this->definitions)) {
             if (array_key_exists($dependency->getName(), $this->definitions[$id]->constructorParams)) {
@@ -149,13 +165,13 @@ class Container extends Pimple implements ContainerInterface
             }
             // configuration values
             if (! $dependency->isCallable()) {
-                // simple values
-                if ($this->has($dependency->getName())) {
-                    return $this->get($dependency->getName());
-                }
                 // mapped values
                 if (array_key_exists($dependency->getName(), $this->definitions) && $this->has($this->definitions[$dependency->getName()])) {
                     return $this->get($this->definitions[$dependency->getName()]);
+                }
+                // simple values
+                if ($this->has($dependency->getName())) {
+                    return $this->get($dependency->getName());
                 }
             }
         }
@@ -171,7 +187,27 @@ class Container extends Pimple implements ContainerInterface
         return $this->get($dependency->getClass()->getName());
     }
 
-    public function addDefiniton($definition) : array
+    public function offsetGet($id)
+    {
+        try {
+            return parent::offsetGet($id);
+        } catch (UnknownIdentifierException $e) {
+            if (! $this->has($id)) {
+                /** @var ObjectDefinition $definition */
+                foreach ($this->definitions as $class => $definition) {
+                    if (in_array($id, $definition->bindings)) {
+                        return $this->get($class);
+                    }
+                }
+
+                throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
+            }
+
+            return $this->get($id);
+        }
+    }
+
+    public function addDefiniton($definition)
     {
         if (is_string($definition)) {
             if (! file_exists($definition)) {

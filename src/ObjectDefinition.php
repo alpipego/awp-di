@@ -11,10 +11,18 @@ namespace WPHibou\DI;
 class ObjectDefinition
 {
     public $constructorParams = [];
+    public $bindings = [];
 
     public function constructorParam(string $name, $value) : self
     {
         $this->constructorParams[$name] = $value;
+
+        return $this;
+    }
+
+    public function bind(string $class)
+    {
+        $this->bindings[] = $class;
 
         return $this;
     }
