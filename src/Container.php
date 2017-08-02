@@ -53,10 +53,13 @@ class Container extends Pimple implements ContainerInterface
     public function get($id)
     {
         if (! is_string($id)) {
-            throw new ContainerException('Only strings should be passed as $id');
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw new ContainerException('Only strings should be passed as $id');
+            }
         }
+
         // simple value exists
-        if (isset($this[$id])) {
+        if (! empty($this[$id])) {
             return $this[$id];
         }
 
@@ -74,17 +77,41 @@ class Container extends Pimple implements ContainerInterface
             if (! empty($configArray)) {
                 return $configArray;
             }
-            throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
+
+            // check if interface bound to value
+            foreach ($this->definitions as $class => $definition) {
+                if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
+                    $this->offsetSet($definition->bindings[$key], $this->get($class));
+
+                    return $this->get($class);
+                }
+            }
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
+            }
+
+            return false;
         }
 
         if ($reflector->isInterface()) {
+            // check if interface mapped to value
             if (array_key_exists($id, $this->definitions)) {
                 $id = $this->definitions[$id];
-                if ($this->has($id)) {
-                    return $this[$id];
+            } else {
+                // check if interface bound to value
+                foreach ($this->definitions as $class => $definition) {
+                    if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
+                        $this->offsetSet($definition->bindings[$key], $this->get($class));
+                        $id = $class;
+                        break;
+                    }
                 }
-                $reflector = new ReflectionClass($id);
             }
+            if ($this->has($id)) {
+                return $this[$id];
+            }
+            $reflector = new ReflectionClass($id);
         }
 
         /** @var ReflectionMethod|null */
@@ -124,7 +151,7 @@ class Container extends Pimple implements ContainerInterface
             if (! array_diff($idArr, $keyArr)) {
                 $keys  = array_diff($keyArr, $idArr);
                 $value = $this[$key];
-                while ($key = array_pop($keys)) {
+                while (($key = array_pop($keys))) {
                     $value = [$key => $value];
                 }
 
@@ -169,10 +196,13 @@ class Container extends Pimple implements ContainerInterface
                 if (array_key_exists($dependency->getName(), $this->definitions) && $this->has($this->definitions[$dependency->getName()])) {
                     return $this->get($this->definitions[$dependency->getName()]);
                 }
-                // simple values
-                if ($this->has($dependency->getName())) {
-                    return $this->get($dependency->getName());
-                }
+            }
+        }
+
+        // simple values
+        if (! $dependency->isCallable()) {
+            if ($this->has($dependency->getName())) {
+                return $this->get($dependency->getName());
             }
         }
 
@@ -181,7 +211,9 @@ class Container extends Pimple implements ContainerInterface
         }
 
         if (is_null($dependency->getClass())) {
-            throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $dependency));
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $dependency));
+            }
         }
 
         return $this->get($dependency->getClass()->getName());
@@ -190,17 +222,32 @@ class Container extends Pimple implements ContainerInterface
     public function offsetGet($id)
     {
         try {
-            return parent::offsetGet($id);
+            $value = parent::offsetGet($id);
+            if (in_array(gettype($value), ['object', 'array'], true)) {
+                return $value;
+            }
+
+            try {
+                $class = new ReflectionClass($value);
+
+                return $this->get($class->getName());
+            } catch (ReflectionException $e) {
+                return $value;
+            }
         } catch (UnknownIdentifierException $e) {
             if (! $this->has($id)) {
                 /** @var ObjectDefinition $definition */
                 foreach ($this->definitions as $class => $definition) {
-                    if (in_array($id, $definition->bindings)) {
+                    if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
+                        $this->offsetSet($definition->bindings[$key], $this->get($class));
+
                         return $this->get($class);
                     }
                 }
 
-                throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    throw new NotFoundException(sprintf('Identifier "%s" is not defined.', $id));
+                }
             }
 
             return $this->get($id);
@@ -211,13 +258,21 @@ class Container extends Pimple implements ContainerInterface
     {
         if (is_string($definition)) {
             if (! file_exists($definition)) {
-                throw new \Exception(sprintf('%s not a readable file', gettype($definition)));
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    throw new \Exception(sprintf('%s not a readable file', gettype($definition)));
+                }
+
+                return false;
             }
             $definition = require_once $definition;
         }
 
         if (! is_array($definition)) {
-            throw new \Exception(sprintf('Definiton has to be an array, %s given', gettype($definition)));
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw new \Exception(sprintf('Definiton has to be an array, %s given', gettype($definition)));
+            }
+
+            return false;
         }
 
         $this->definitions = array_merge($this->definitions, $definition);
