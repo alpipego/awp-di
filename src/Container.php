@@ -10,9 +10,7 @@ namespace WPHibou\DI;
 
 use Pimple\Container as Pimple;
 use Pimple\Exception\UnknownIdentifierException;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -41,14 +39,7 @@ class Container extends Pimple implements ContainerInterface
     }
 
     /**
-     * Finds an entry of the container by its identifier and returns it.
-     *
-     * @param string $id Identifier of the entry to look for.
-     *
-     * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
-     * @throws ContainerExceptionInterface Error while retrieving the entry.
-     *
-     * @return mixed Entry.
+     * {@inheritdoc}
      */
     public function get($id)
     {
@@ -59,8 +50,8 @@ class Container extends Pimple implements ContainerInterface
         }
 
         // simple value exists
-        if (! empty($this[$id])) {
-            return $this[$id];
+        if ($this->offsetExists($id)) {
+            return parent::offsetGet($id);
         }
 
         try {
@@ -69,6 +60,9 @@ class Container extends Pimple implements ContainerInterface
             // if mapped value exists
             if (array_key_exists($id, $this->definitions)) {
                 $this->offsetSet($id, $this->definitions[$id]);
+                if (is_callable($this->definitions[$id])) {
+                    return $this->definitions[$id]();
+                }
 
                 return $this->definitions[$id];
             }
@@ -80,10 +74,11 @@ class Container extends Pimple implements ContainerInterface
 
             // check if interface bound to value
             foreach ($this->definitions as $class => $definition) {
-                if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
-                    $this->offsetSet($definition->bindings[$key], $this->get($class));
+                if (! empty($definition->bindings) && ($key = array_search($id, $definition->bindings))) {
+                    $class = $this->get($class);
+                    $this->offsetSet($definition->bindings[$key], $class);
 
-                    return $this->get($class);
+                    return $class;
                 }
             }
 
@@ -126,6 +121,9 @@ class Container extends Pimple implements ContainerInterface
             $this->offsetSet($id, function () use ($id) {
                 return new $id();
             });
+            if (is_callable($this[$id])) {
+                return $this[$id]();
+            }
 
             return $this[$id];
         }
@@ -137,6 +135,10 @@ class Container extends Pimple implements ContainerInterface
         $this->offsetSet($id, function () use ($reflector, $dependencies) {
             return $reflector->newInstanceArgs($dependencies);
         });
+
+        if (is_callable($this[$id])) {
+            return $this[$id]();
+        }
 
         return $this[$id];
     }
@@ -163,15 +165,7 @@ class Container extends Pimple implements ContainerInterface
     }
 
     /**
-     * Returns true if the container can return an entry for the given identifier.
-     * Returns false otherwise.
-     *
-     * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
-     * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
-     *
-     * @param string $id Identifier of the entry to look for.
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function has($id)
     {
@@ -238,10 +232,13 @@ class Container extends Pimple implements ContainerInterface
             if (! $this->has($id)) {
                 /** @var ObjectDefinition $definition */
                 foreach ($this->definitions as $class => $definition) {
-                    if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
-                        $this->offsetSet($definition->bindings[$key], $this->get($class));
+                    if (! empty($definition->bindings)) {
+                        $key = array_search($id, $definition->bindings, true);
+                        if ($key !== false) {
+                            $this->offsetSet($definition->bindings[$key], $this->get($class));
 
-                        return $this->get($class);
+                            return $this->get($class);
+                        }
                     }
                 }
 
