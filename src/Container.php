@@ -149,7 +149,7 @@ class Container extends Pimple implements ContainerInterface
     {
         // check if this is an array-like config request and return it as array
         $return = [];
-        $idArr  = (array)explode('.', $id);
+        $idArr  = explode('.', $id);
         foreach ($this->keys() as $key) {
             $keyArr = explode('.', $key);
             if (! array_diff($idArr, $keyArr)) {
@@ -161,9 +161,38 @@ class Container extends Pimple implements ContainerInterface
 
                 $return = array_merge_recursive($return, $value);
             }
+
+            if (is_array($this->get($key))) {
+                array_shift($idArr);
+
+                return $this->recursiveArrayKeySearch($this->get($key), $idArr);
+            }
         }
 
         return $return;
+    }
+
+    private function recursiveArrayKeySearch(array $array, array $keys)
+    {
+        if ($this->recursiveArrayKeyExists($array, ...$keys)) {
+            return array_reduce($keys, function ($array, $value) {
+                return $array[$value];
+            }, $array);
+        }
+
+        return null;
+    }
+
+    private function recursiveArrayKeyExists(array $array, ...$keys): bool
+    {
+        foreach ($keys as $key) {
+            if (! array_key_exists($key, $array)) {
+                return false;
+            }
+            $array = $array[$key];
+        }
+
+        return true;
     }
 
     /**
