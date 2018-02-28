@@ -43,11 +43,13 @@ class Container extends Pimple implements ContainerInterface
      */
     public function get($id)
     {
-        if (! is_string($id)) {
+        if (! is_string($id) || (is_object($id) && method_exists($id, '__toString'))) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 throw new ContainerException('Only strings should be passed as $id');
             }
         }
+
+        $id = (string)$id;
 
         // simple value exists
         if ($this->offsetExists($id)) {
@@ -67,7 +69,7 @@ class Container extends Pimple implements ContainerInterface
                 return $this->definitions[$id];
             }
             // check if complex value exists
-            $configArray = $this->configArray((string)$id);
+            $configArray = $this->configArray($id);
             if (! empty($configArray)) {
                 return $configArray;
             }
@@ -187,7 +189,8 @@ class Container extends Pimple implements ContainerInterface
             // configuration values
             if (! $dependency->isCallable()) {
                 // mapped values
-                if (array_key_exists($dependency->getName(), $this->definitions) && $this->has($this->definitions[$dependency->getName()])) {
+                if (array_key_exists($dependency->getName(),
+                        $this->definitions) && $this->has($this->definitions[$dependency->getName()])) {
                     return $this->get($this->definitions[$dependency->getName()]);
                 }
             }
