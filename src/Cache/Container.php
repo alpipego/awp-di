@@ -22,6 +22,23 @@ class Container extends Pimple implements ContainerInterface, \ArrayAccess
         parent::__construct();
     }
 
+    public function run()
+    {
+        foreach ($this->keys() as $key) {
+            $content = $this->get($key);
+
+            if (is_object($content)) {
+                try {
+                    $reflection = new \ReflectionClass($content);
+                    if ($reflection->hasMethod('run')) {
+                        $content->run();
+                    }
+                } catch (\ReflectionException $e) {
+                }
+            }
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -35,7 +52,7 @@ class Container extends Pimple implements ContainerInterface, \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return json_decode($this->container[$offset]);
+        return $this->container[$offset];
     }
 
     /**

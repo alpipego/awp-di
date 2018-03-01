@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPHibou\DI\Cache;
 
+use WPHibou\DI\ContainerInterface;
+
 final class Cache implements CacheInterface
 {
     private $cache;
@@ -21,16 +23,15 @@ final class Cache implements CacheInterface
                 : new TransientCache($group, $key);
     }
 
-    public function set(Container $container): bool
+    public function set(ContainerInterface $container): bool
     {
         return $this->cache->set($container);
     }
 
     /**
      * @throws ContainerCacheException
-     * @return Container
      */
-    public function get(): Container
+    public function get(): ContainerInterface
     {
         return $this->cache->get();
     }
