@@ -17,7 +17,7 @@ class AbstractCache
     protected $key;
     protected $group;
 
-    public function __construct(string $key = 'container', string $group = 'wp-hibou_di')
+    public function __construct(string $group = 'wp-hibou_di', string $key = 'container')
     {
         $this->key = $key;
         $this->group = $group;

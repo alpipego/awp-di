@@ -11,15 +11,19 @@ namespace WPHibou\DI;
 
 final class TransientCache extends AbstractCache implements CacheInterface
 {
-
     public function set(Container $container): bool
     {
-        return set_site_transient($this->key, $this->serialize($container), 0);
+        return set_site_transient($this->key(), $this->serialize($container), 0);
+    }
+
+    private function key()
+    {
+        return $this->group . '_' . $this->key;
     }
 
     public function get(): Container
     {
-        $serializedContainer = get_site_transient($this->key);
+        $serializedContainer = get_site_transient($this->key());
         if ($serializedContainer === false) {
             throw new ContainerCacheException('Container not found in cache');
         }
@@ -29,11 +33,11 @@ final class TransientCache extends AbstractCache implements CacheInterface
 
     public function delete(): bool
     {
-        return delete_site_transient($this->key);
+        return delete_site_transient($this->key());
     }
 
     public function has(): bool
     {
-        return (bool)get_site_transient($this->key);
+        return (bool)get_site_transient($this->key());
     }
 }
