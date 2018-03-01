@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace WPHibou\DI\Cache;
 
-use WPHibou\DI\Container;
 use WPHibou\DI\ContainerInterface;
 
 final class TransientCache extends AbstractCache implements CacheInterface

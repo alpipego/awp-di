@@ -10,7 +10,6 @@ namespace WPHibou\DI;
 
 use Pimple\Container as Pimple;
 use Pimple\Exception\UnknownIdentifierException;
-use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;

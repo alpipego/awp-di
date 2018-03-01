@@ -20,7 +20,7 @@ class AbstractCache
 
     public function __construct(string $group = 'wp-hibou_di', string $key = 'container')
     {
-        $this->key = $key;
+        $this->key   = $key;
         $this->group = $group;
     }
 
@@ -31,6 +31,6 @@ class AbstractCache
 
     protected function unserialize(string $serializedContainer): ContainerInterface
     {
-        return unserialize($serializedContainer);
+        return new Container(unserialize($serializedContainer));
     }
 }
