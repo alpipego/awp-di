@@ -7,13 +7,15 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
+
+use WPHibou\DI\ContainerInterface;
 
 interface CacheInterface
 {
-    public function set(Container $container): bool;
+    public function set(ContainerInterface $container): bool;
 
-    public function get(): Container;
+    public function get(): ContainerInterface;
 
     public function delete(): bool;
 

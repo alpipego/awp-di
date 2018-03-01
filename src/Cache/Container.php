@@ -5,12 +5,14 @@
  * Date: 07.08.2017
  * Time: 13:33
  */
+declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
 
-use Psr\Container\ContainerInterface;
+use WPHibou\DI\ContainerInterface;
+use Pimple\Container as Pimple;
 
-class CachedContainer extends \Pimple\Container implements ContainerInterface, \ArrayAccess
+class Container extends Pimple implements ContainerInterface, \ArrayAccess
 {
     private $container;
 

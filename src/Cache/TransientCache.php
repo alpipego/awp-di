@@ -7,11 +7,14 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
+
+use WPHibou\DI\Container;
+use WPHibou\DI\ContainerInterface;
 
 final class TransientCache extends AbstractCache implements CacheInterface
 {
-    public function set(Container $container): bool
+    public function set(ContainerInterface $container): bool
     {
         return set_site_transient($this->key(), $this->serialize($container), 0);
     }
@@ -21,7 +24,7 @@ final class TransientCache extends AbstractCache implements CacheInterface
         return $this->group . '_' . $this->key;
     }
 
-    public function get(): Container
+    public function get(): ContainerInterface
     {
         $serializedContainer = get_site_transient($this->key());
         if ($serializedContainer === false) {

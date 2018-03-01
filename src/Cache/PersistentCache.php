@@ -7,16 +7,19 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
+
+use WPHibou\DI\Container;
+use WPHibou\DI\ContainerInterface;
 
 final class PersistentCache extends AbstractCache implements CacheInterface
 {
-    public function set(Container $container): bool
+    public function set(ContainerInterface $container): bool
     {
         return wp_cache_set($this->key, $container, $this->group, 0);
     }
 
-    public function get(): Container
+    public function get(): ContainerInterface
     {
         $serializedContainer = wp_cache_get($this->key, $this->group);
         if ($serializedContainer === false) {

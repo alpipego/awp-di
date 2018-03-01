@@ -7,10 +7,12 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
 
 final class Cache implements CacheInterface
 {
+    private $cache;
+
     public function __construct(string $group = 'wp-hibou_di', string $key = 'container')
     {
         $this->cache =
@@ -24,6 +26,10 @@ final class Cache implements CacheInterface
         return $this->cache->set($container);
     }
 
+    /**
+     * @throws ContainerCacheException
+     * @return Container
+     */
     public function get(): Container
     {
         return $this->cache->get();

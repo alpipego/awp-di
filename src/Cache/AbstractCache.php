@@ -7,10 +7,11 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Cache;
 
 use function Opis\Closure\serialize;
 use function Opis\Closure\unserialize;
+use WPHibou\DI\ContainerInterface;
 
 class AbstractCache
 {
@@ -23,12 +24,12 @@ class AbstractCache
         $this->group = $group;
     }
 
-    protected function serialize(Container $container): string
+    protected function serialize(ContainerInterface $container): string
     {
         return serialize($container);
     }
 
-    protected function unserialize(string $serializedContainer): Container
+    protected function unserialize(string $serializedContainer): ContainerInterface
     {
         return unserialize($serializedContainer);
     }
