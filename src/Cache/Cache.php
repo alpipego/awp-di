@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPHibou\DI\Cache;
 
 use WPHibou\DI\ContainerInterface;
+use WPHibou\DI\Exception\ContainerCacheException;
 
 final class Cache implements CacheInterface
 {
@@ -33,7 +34,11 @@ final class Cache implements CacheInterface
      */
     public function get(): ContainerInterface
     {
-        return $this->cache->get();
+        try {
+            return $this->cache->get();
+        } catch (ContainerCacheException $e) {
+            throw $e;
+        }
     }
 
     public function delete(): bool

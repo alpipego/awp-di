@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace WPHibou\DI\Cache;
 
-use WPHibou\DI\Container;
 use WPHibou\DI\ContainerInterface;
+use WPHibou\DI\Exception\ContainerCacheException;
 
 final class PersistentCache extends AbstractCache implements CacheInterface
 {

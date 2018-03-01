@@ -6,11 +6,14 @@
  * Time: 10:54
  */
 
-namespace WPHibou\DI;
+namespace WPHibou\DI\Exception;
 
 use Psr\Container\NotFoundExceptionInterface;
 
 class NotFoundException extends \InvalidArgumentException implements NotFoundExceptionInterface
 {
-
+    public function __construct($id)
+    {
+        parent::__construct(\sprintf('Identifier "%s" cannot be found.', $id));
+    }
 }

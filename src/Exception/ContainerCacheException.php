@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI\Cache;
+namespace WPHibou\DI\Exception;
 
 class ContainerCacheException extends \Exception
 {

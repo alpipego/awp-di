@@ -10,21 +10,22 @@ declare(strict_types=1);
 namespace WPHibou\DI\Cache;
 
 use WPHibou\DI\ContainerInterface;
-use Pimple\Container as Pimple;
+use WPHibou\DI\Exception\ContainerCacheException;
 
-class Container extends Pimple implements ContainerInterface, \ArrayAccess
+class Container implements ContainerInterface
 {
-    private $container;
+    private $values;
+    private $keys;
 
-    public function __construct(array $container)
+    public function __construct(array $values)
     {
-        $this->container = $container;
-        parent::__construct();
+        $this->values = $values;
+        $this->keys   = array_keys($values);
     }
 
     public function run()
     {
-        foreach ($this->keys() as $key) {
+        foreach ($this->keys as $key) {
             $content = $this->get($key);
 
             if (is_object($content)) {
@@ -42,48 +43,44 @@ class Container extends Pimple implements ContainerInterface, \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function get($id)
+    public function get(string $id)
     {
-        return $this->offsetGet($id);
+        return $this->values[$id];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function has(string $id)
     {
-        return $this->container[$offset];
+        return (bool)! empty($this->values[$id]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function has($id)
+    public function set(string $id, $value)
     {
-        return $this->offsetExists($id);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            throw new ContainerCacheException(sprintf('Value "%s" can\'t be set on cached container.', $id));
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset)
+    public function addDefinition(string $definition)
     {
-        return (bool)! empty($this->container[$offset]);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            throw new ContainerCacheException(
+                sprintf('Definition "%s" can\'t be set on cached container.', $definition)
+            );
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetSet($offset, $value)
+    public function dump(): array
     {
-        return false;
+        return $this->values;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetUnset($offset)
+    public function extend(string $id, callable $callable)
     {
-        return false;
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            throw new ContainerCacheException(sprintf('Cached container identifier "%s" cannot be extended.', $id));
+        }
     }
 }

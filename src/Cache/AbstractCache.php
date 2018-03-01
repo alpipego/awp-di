@@ -26,7 +26,7 @@ class AbstractCache
 
     protected function serialize(ContainerInterface $container): string
     {
-        return serialize($container);
+        return serialize($container->dump());
     }
 
     protected function unserialize(string $serializedContainer): ContainerInterface
