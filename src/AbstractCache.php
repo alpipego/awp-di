@@ -14,8 +14,14 @@ use function Opis\Closure\unserialize;
 
 class AbstractCache
 {
-    const KEY = 'container';
-    const GROUP = 'wp-hibou/di';
+    protected $key;
+    protected $group;
+
+    public function __construct(string $key = 'container', string $group = 'wp-hibou_di')
+    {
+        $this->key = $key;
+        $this->group = $group;
+    }
 
     protected function serialize(Container $container): string
     {

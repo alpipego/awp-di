@@ -14,12 +14,12 @@ final class TransientCache extends AbstractCache implements CacheInterface
 
     public function set(Container $container): bool
     {
-        return set_site_transient(self::KEY, $this->serialize($container), 0);
+        return set_site_transient($this->key, $this->serialize($container), 0);
     }
 
     public function get(): Container
     {
-        $serializedContainer = get_site_transient(self::KEY);
+        $serializedContainer = get_site_transient($this->key);
         if ($serializedContainer === false) {
             throw new ContainerCacheException('Container not found in cache');
         }
@@ -29,11 +29,11 @@ final class TransientCache extends AbstractCache implements CacheInterface
 
     public function delete(): bool
     {
-        return delete_site_transient(self::KEY);
+        return delete_site_transient($this->key);
     }
 
     public function has(): bool
     {
-        return (bool)get_site_transient(self::KEY);
+        return (bool)get_site_transient($this->key);
     }
 }

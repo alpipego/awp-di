@@ -13,12 +13,12 @@ final class PersistentCache extends AbstractCache implements CacheInterface
 {
     public function set(Container $container): bool
     {
-        return wp_cache_set(self::KEY, $container, self::GROUP, 0);
+        return wp_cache_set($this->key, $container, $this->group, 0);
     }
 
     public function get(): Container
     {
-        $serializedContainer = wp_cache_get(self::KEY, self::GROUP);
+        $serializedContainer = wp_cache_get($this->key, $this->group);
         if ($serializedContainer === false) {
             throw new ContainerCacheException('Container not found in cache');
         }
@@ -28,11 +28,11 @@ final class PersistentCache extends AbstractCache implements CacheInterface
 
     public function delete(): bool
     {
-        return wp_cache_delete(self::KEY, self::GROUP);
+        return wp_cache_delete($this->key, $this->group);
     }
 
     public function has(): bool
     {
-        return (bool)wp_cache_get(self::KEY, self::GROUP);
+        return (bool)wp_cache_get($this->key, $this->group);
     }
 }
