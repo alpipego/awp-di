@@ -30,9 +30,12 @@ class Container extends Pimple implements ContainerInterface
             $content = $this->get($key);
 
             if (is_object($content)) {
-                $reflection = new ReflectionClass($content);
-                if ($reflection->hasMethod('run')) {
-                    $content->run();
+                try {
+                    $reflection = new ReflectionClass($content);
+                    if ($reflection->hasMethod('run')) {
+                        $content->run();
+                    }
+                } catch (ReflectionException $e) {
                 }
             }
         }
