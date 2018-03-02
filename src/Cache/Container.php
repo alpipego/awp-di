@@ -77,7 +77,7 @@ class Container implements ContainerInterface
         return $this->values;
     }
 
-    public function extend(string $id, callable $callable)
+    public function extend($id, $callable)
     {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             throw new ContainerCacheException(sprintf('Cached container identifier "%s" cannot be extended.', $id));
