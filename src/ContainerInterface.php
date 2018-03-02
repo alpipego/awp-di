@@ -24,7 +24,7 @@ interface ContainerInterface
 
     public function set(string $id, $value);
 
-    public function extend(string $id, callable $callable);
+    public function extend($id, $callable);
 
     public function addDefinition(string $definition);
 

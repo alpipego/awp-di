@@ -43,7 +43,7 @@ class Container extends Pimple implements ContainerInterface
     /**
      * {@inheritdoc}
      */
-    public function get($id)
+    public function get(string $id)
     {
         if (! is_string($id) || (is_object($id) && method_exists($id, '__toString'))) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -200,7 +200,7 @@ class Container extends Pimple implements ContainerInterface
     /**
      * {@inheritdoc}
      */
-    public function has($id)
+    public function has(string $id)
     {
         try {
             $this->get($id);
@@ -285,18 +285,16 @@ class Container extends Pimple implements ContainerInterface
         }
     }
 
-    public function addDefiniton($definition)
+    public function addDefinition(string $definition)
     {
-        if (is_string($definition)) {
-            if (! file_exists($definition)) {
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    throw new \Exception(sprintf('%s not a readable file', gettype($definition)));
-                }
-
-                return false;
+        if (! file_exists($definition)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw new \Exception(sprintf('%s not a readable file', gettype($definition)));
             }
-            $definition = require_once $definition;
+
+            return false;
         }
+        $definition = require_once $definition;
 
         if (! is_array($definition)) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -307,5 +305,21 @@ class Container extends Pimple implements ContainerInterface
         }
 
         $this->definitions = array_merge($this->definitions, $definition);
+    }
+
+    public function set(string $id, $value)
+    {
+        parent::offsetSet($id, $value);
+    }
+
+    public function dump(): array
+    {
+        $keys   = array_merge($this->keys(), array_keys($this->definitions));
+        $values = [];
+        foreach ($keys as $key) {
+            $values[$key] = $this->get($key);
+        }
+
+        return $values;
     }
 }
