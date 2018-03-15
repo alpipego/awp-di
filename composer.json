@@ -1,15 +1,16 @@
 {
-  "name": "wp-hibou/di",
+  "name": "alpipego/awp-di",
   "description": "Pimple based autowired dependency injection",
   "type": "library",
   "require": {
     "pimple/pimple": "^3.2",
     "psr/container": "^1.0",
-    "php": "^7.0"
+    "php": "^7.0",
+    "opis/closure": "^3.0.2"
   },
   "autoload": {
     "psr-4": {
-      "WPHibou\\DI\\": "src"
+      "Alpipego\\AWP\\DI\\": "src"
     },
     "files": [
       "src/functions.php"
