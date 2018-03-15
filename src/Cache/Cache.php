@@ -16,7 +16,7 @@ final class Cache implements CacheInterface
 {
     private $cache;
 
-    public function __construct(string $group = 'wp-hibou_di', string $key = 'container')
+    public function __construct(string $group = 'awp_di', string $key = 'container')
     {
         $this->cache =
             wp_using_ext_object_cache()
