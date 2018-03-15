@@ -6,7 +6,7 @@
  * Time: 10:57
  */
 
-namespace WPHibou\DI;
+namespace Alpipego\AWP\DI;
 
 class ObjectDefinition
 {

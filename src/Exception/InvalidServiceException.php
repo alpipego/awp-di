@@ -6,7 +6,7 @@
  * Time: 13:29
  */
 
-namespace WPHibou\DI\Exception;
+namespace Alpipego\AWP\DI\Exception;
 
 use Psr\Container\NotFoundExceptionInterface;
 

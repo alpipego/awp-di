@@ -7,9 +7,9 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI\Cache;
+namespace Alpipego\AWP\DI\Cache;
 
-use WPHibou\DI\ContainerInterface;
+use Alpipego\AWP\DI\ContainerInterface;
 
 interface CacheInterface
 {

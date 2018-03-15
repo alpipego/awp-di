@@ -7,14 +7,14 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI;
+namespace Alpipego\AWP\DI;
 
 /**
  * Interface ContainerInterface
  *
  * Compatible with PSR-11 ContainerInterface but more type safe
  *
- * @package WPHibou\DI
+ * @package Alpipego\AWP\DI
  */
 interface ContainerInterface
 {

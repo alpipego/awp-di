@@ -7,11 +7,11 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI\Cache;
+namespace Alpipego\AWP\DI\Cache;
 
+use Alpipego\AWP\DI\ContainerInterface;
 use function Opis\Closure\serialize;
 use function Opis\Closure\unserialize;
-use WPHibou\DI\ContainerInterface;
 
 class AbstractCache
 {

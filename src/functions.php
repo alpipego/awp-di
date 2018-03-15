@@ -6,7 +6,7 @@
  * Time: 17:55
  */
 
-namespace WPHibou\DI;
+namespace Alpipego\AWP\DI;
 
 function object()
 {

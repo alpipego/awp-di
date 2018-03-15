@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI\Exception;
+namespace Alpipego\AWP\DI\Exception;
 
 use Psr\Container\ContainerExceptionInterface;
 

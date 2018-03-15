@@ -6,7 +6,7 @@
  * Time: 13:25
  */
 
-namespace WPHibou\DI;
+namespace Alpipego\AWP\DI;
 
 use Psr\Container\ContainerExceptionInterface;
 

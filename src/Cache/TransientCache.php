@@ -7,10 +7,10 @@
  */
 declare(strict_types=1);
 
-namespace WPHibou\DI\Cache;
+namespace Alpipego\AWP\DI\Cache;
 
-use WPHibou\DI\ContainerInterface;
-use WPHibou\DI\Exception\ContainerCacheException;
+use Alpipego\AWP\DI\ContainerInterface;
+use Alpipego\AWP\DI\Exception\ContainerCacheException;
 
 final class TransientCache extends AbstractCache implements CacheInterface
 {

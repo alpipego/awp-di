@@ -6,7 +6,7 @@
  * Time: 10:53
  */
 
-namespace WPHibou\DI;
+namespace Alpipego\AWP\DI;
 
 use Pimple\Container as Pimple;
 use Pimple\Exception\UnknownIdentifierException;
@@ -221,7 +221,8 @@ class Container extends Pimple implements ContainerInterface
             if (! $dependency->isCallable()) {
                 // mapped values
                 if (array_key_exists($dependency->getName(),
-                        $this->definitions) && $this->has($this->definitions[$dependency->getName()])) {
+                        $this->definitions) && $this->has($this->definitions[$dependency->getName()])
+                ) {
                     return $this->get($this->definitions[$dependency->getName()]);
                 }
             }
