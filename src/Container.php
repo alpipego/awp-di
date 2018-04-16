@@ -8,6 +8,7 @@
 
 namespace Alpipego\AWP\DI;
 
+use Alpipego\AWP\DI\Exception\NotFoundException;
 use Pimple\Container as Pimple;
 use Pimple\Exception\UnknownIdentifierException;
 use ReflectionClass;
@@ -45,7 +46,7 @@ class Container extends Pimple implements ContainerInterface
      */
     public function get(string $id)
     {
-        if (! is_string($id) || (is_object($id) && method_exists($id, '__toString'))) {
+        if ( ! is_string($id) || (is_object($id) && method_exists($id, '__toString'))) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 throw new ContainerException('Only strings should be passed as $id');
             }
@@ -70,20 +71,24 @@ class Container extends Pimple implements ContainerInterface
 
                 return $this->definitions[$id];
             }
-            // check if complex value exists
-            $configArray = $this->configArray($id);
-            if (! empty($configArray)) {
-                return $configArray;
-            }
 
             // check if interface bound to value
             foreach ($this->definitions as $class => $definition) {
-            	if ($definition instanceof ObjectDefinition && ($key = array_search($id, $definition->bindings)) !== false) {
+                if (
+                    ($definition instanceof ObjectDefinition || $definition instanceof \WPHibou\DI\ObjectDefinition)
+                    && ($key = array_search($id, $definition->bindings)) !== false
+                ) {
                     $class = $this->get($class);
                     $this->offsetSet($definition->bindings[$key], $class);
 
                     return $class;
                 }
+            }
+
+            // check if complex value exists
+            $configArray = $this->configArray($id);
+            if ( ! empty($configArray)) {
+                return $configArray;
             }
 
             if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -100,7 +105,10 @@ class Container extends Pimple implements ContainerInterface
             } else {
                 // check if interface bound to value
                 foreach ($this->definitions as $class => $definition) {
-                    if (! empty($definition->bindings) && ($key = in_array($id, $definition->bindings))) {
+                    if (
+                        ($definition instanceof ObjectDefinition || $definition instanceof \WPHibou\DI\ObjectDefinition)
+                        && ($key = array_search($id, $definition->bindings)) !== false
+                    ) {
                         $this->offsetSet($definition->bindings[$key], $this->get($class));
                         $id = $class;
                         break;
@@ -116,7 +124,7 @@ class Container extends Pimple implements ContainerInterface
         /** @var ReflectionMethod|null */
         $constructor = $reflector->getConstructor();
 
-        if (! is_null($constructor)) {
+        if ( ! is_null($constructor)) {
             /** @var ReflectionParameter[] */
             $dependencies = $constructor->getParameters();
         }
@@ -154,7 +162,7 @@ class Container extends Pimple implements ContainerInterface
         $idArr  = explode('.', $id);
         foreach ($this->keys() as $key) {
             $keyArr = explode('.', $key);
-            if (! array_diff($idArr, $keyArr)) {
+            if ( ! array_diff($idArr, $keyArr)) {
                 $keys  = array_diff($keyArr, $idArr);
                 $value = $this[$key];
                 while (($key = array_pop($keys))) {
@@ -164,7 +172,10 @@ class Container extends Pimple implements ContainerInterface
                 $return = array_merge_recursive($return, $value);
             }
 
-            if (is_array($this->get($key))) {
+            echo '<code><pre>';
+                var_dump([$key => $this->has($key), is_array($this->get($key))]);
+            echo '</pre></code>';
+            if ($this->has($key) && is_array($this->get($key))) {
                 array_shift($idArr);
 
                 return $this->recursiveArrayKeySearch($this->get($key), $idArr);
@@ -172,6 +183,34 @@ class Container extends Pimple implements ContainerInterface
         }
 
         return $return;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has(string $id)
+    {
+        if (parent::offsetExists($id)) {
+            return true;
+        }
+
+        foreach ($this->definitions as $class => $definition) {
+            if ($class === $id) {
+                return true;
+            }
+            if (is_string($definition) && $id === $definition) {
+                return true;
+            }
+            if (
+                ($definition instanceof ObjectDefinition || $definition instanceof \WPHibou\DI\ObjectDefinition)
+                && ($key = array_search($id, $definition->bindings)) !== false
+            ) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function recursiveArrayKeySearch(array $array, array $keys)
@@ -185,30 +224,16 @@ class Container extends Pimple implements ContainerInterface
         return null;
     }
 
-    private function recursiveArrayKeyExists(array $array, ...$keys): bool
+    private function recursiveArrayKeyExists(array $array, ...$keys) : bool
     {
         foreach ($keys as $key) {
-            if (! array_key_exists($key, $array)) {
+            if ( ! array_key_exists($key, $array)) {
                 return false;
             }
             $array = $array[$key];
         }
 
         return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function has(string $id)
-    {
-        try {
-            $this->get($id);
-
-            return true;
-        } catch (NotFoundException $e) {
-            return false;
-        }
     }
 
     private function resolveDependency(ReflectionParameter $dependency, string $id)
@@ -218,7 +243,7 @@ class Container extends Pimple implements ContainerInterface
                 return $this->get($this->definitions[$id]->constructorParams[$dependency->getName()]);
             }
             // configuration values
-            if (! $dependency->isCallable()) {
+            if ( ! $dependency->isCallable()) {
                 // mapped values
                 if (array_key_exists($dependency->getName(),
                         $this->definitions) && $this->has($this->definitions[$dependency->getName()])
@@ -229,7 +254,7 @@ class Container extends Pimple implements ContainerInterface
         }
 
         // simple values
-        if (! $dependency->isCallable()) {
+        if ( ! $dependency->isCallable()) {
             if ($this->has($dependency->getName())) {
                 return $this->get($dependency->getName());
             }
@@ -264,10 +289,10 @@ class Container extends Pimple implements ContainerInterface
                 return $value;
             }
         } catch (UnknownIdentifierException $e) {
-            if (! $this->has($id)) {
+            if ( ! $this->has($id)) {
                 /** @var ObjectDefinition $definition */
                 foreach ($this->definitions as $class => $definition) {
-                    if (! empty($definition->bindings)) {
+                    if ( ! empty($definition->bindings)) {
                         $key = array_search($id, $definition->bindings, true);
                         if ($key !== false) {
                             $this->offsetSet($definition->bindings[$key], $this->get($class));
@@ -288,7 +313,7 @@ class Container extends Pimple implements ContainerInterface
 
     public function addDefinition(string $definition)
     {
-        if (! file_exists($definition)) {
+        if ( ! file_exists($definition)) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 throw new \Exception(sprintf('%s not a readable file', gettype($definition)));
             }
@@ -297,7 +322,7 @@ class Container extends Pimple implements ContainerInterface
         }
         $definition = require_once $definition;
 
-        if (! is_array($definition)) {
+        if ( ! is_array($definition)) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 throw new \Exception(sprintf('Definiton has to be an array, %s given', gettype($definition)));
             }
@@ -313,7 +338,7 @@ class Container extends Pimple implements ContainerInterface
         parent::offsetSet($id, $value);
     }
 
-    public function dump(): array
+    public function dump() : array
     {
         $keys   = array_merge($this->keys(), array_keys($this->definitions));
         $values = [];
