@@ -78,7 +78,7 @@ class Container extends Pimple implements ContainerInterface
 
             // check if interface bound to value
             foreach ($this->definitions as $class => $definition) {
-                if (! empty($definition->bindings) && ($key = array_search($id, $definition->bindings))) {
+            	if ($definition instanceof ObjectDefinition && ($key = array_search($id, $definition->bindings)) !== false) {
                     $class = $this->get($class);
                     $this->offsetSet($definition->bindings[$key], $class);
 
