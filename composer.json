@@ -8,9 +8,6 @@
     "php": "^7.0",
     "opis/closure": "^3.0.2"
   },
-  "provide": {
-    "wp-hibou/di": "*"
-  },
   "autoload": {
     "psr-4": {
       "Alpipego\\AWP\\DI\\": "src"
