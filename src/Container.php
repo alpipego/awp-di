@@ -172,9 +172,6 @@ class Container extends Pimple implements ContainerInterface
                 $return = array_merge_recursive($return, $value);
             }
 
-            echo '<code><pre>';
-                var_dump([$key => $this->has($key), is_array($this->get($key))]);
-            echo '</pre></code>';
             if ($this->has($key) && is_array($this->get($key))) {
                 array_shift($idArr);
 
