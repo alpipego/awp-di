@@ -19,11 +19,6 @@ final class TransientCache extends AbstractCache implements CacheInterface
         return set_site_transient($this->key(), $this->serialize($container), 0);
     }
 
-    private function key()
-    {
-        return $this->group . '_' . $this->key;
-    }
-
     public function get(): ContainerInterface
     {
         $serializedContainer = get_site_transient($this->key());
