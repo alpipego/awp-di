@@ -13,7 +13,7 @@ class ObjectDefinition
     public $constructorParams = [];
     public $bindings = [];
 
-    public function __set_state(array $array) : ObjectDefinition
+    public static function __set_state(array $array) : ObjectDefinition
     {
         $o = new self();
         foreach ($array as $key => $thing) {
